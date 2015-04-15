@@ -14,6 +14,11 @@ you can build a debian package:
     cp _php-clear-cache.php /usr/share/php-clear-cache/php-clear-cache.php
     cp php-clear-cache /usr/bin/
 
+## Usage
+
+if you have a PHP pool with the configuration file ```/etc/php5/fpm/pool.d/www.conf````you can clear the apc/apcu and or opcode cache with:
+
+    php-clear-cache -p www
 
 ## sudo
 
