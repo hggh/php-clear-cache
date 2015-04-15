@@ -2,6 +2,12 @@
 Script to clear PHP FPM Cache from Shell.
 
 
+## Debian Package
+
+you can build a debian package:
+
+    debuild
+
 ## Install
 
     mkdir /usr/share/php-clear-cache
