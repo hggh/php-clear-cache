@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE=1
+%:
+	dh $@
+
+override_dh_install:
+	dh_install
+	install php-clear-cache debian/php-clear-cache/usr/bin/php-clear-cache
+	install -m 0644 _php-clear-cache.php debian/php-clear-cache/usr/share/php-clear-cache/php-clear-cache.php
+

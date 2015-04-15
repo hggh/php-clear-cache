@@ -1,0 +1,20 @@
+Source: php-clear-cache
+Section: php
+Priority: optional
+Maintainer: Jonas Genannt <genannt@debian.org>
+Build-Depends: debhelper (>= 7.0.50~), perl
+Standards-Version: 3.9.6
+Vcs-Git: https://github.com/hggh/php-clear-cache.git
+Vcs-Browser: https://github.com/hggh/php-clear-cache
+Homepage: https://github.com/hggh/php-clear-cache
+
+Package: php-clear-cache
+Architecture: all
+Depends: perl,
+         libfcgi-client-perl,
+         ${misc:Depends},
+         ${perl:Depends},
+Description: PHP FPM Clear Cache
+ Clear the APC/APCu or OpCode Cache of a PHP FPM pool.
+ This Perl script allows you to clear the cache
+ of your running PHP FPM Pools without a Webserver.
