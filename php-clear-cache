@@ -34,7 +34,7 @@ GetOptions(
 
 if (!$option_pool) {
 	print STDERR "Please supply a pool name with -p ...\n";
-	print STDERR "Pool Name, the filename of the pool inside pool.d without .conf suffix!";
+	print STDERR "Pool Name, the filename of the pool inside pool.d without .conf suffix!\n";
 	exit(1);
 }
 
