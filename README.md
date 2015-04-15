@@ -4,9 +4,9 @@ Script to clear PHP FPM Cache from Shell.
 
 ## Install
 
-   mkdir /usr/share/php-clear-cache
-   cp _php-clear-cache.php /usr/share/php-clear-cache/php-clear-cache.php
-   cp php-clear-cache /usr/bin/
+    mkdir /usr/share/php-clear-cache
+    cp _php-clear-cache.php /usr/share/php-clear-cache/php-clear-cache.php
+    cp php-clear-cache /usr/bin/
 
 
 ## sudo
