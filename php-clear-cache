@@ -1,0 +1,124 @@
+#!/usr/bin/perl
+
+# Copyright (c) 2015 Jonas Genannt <jonas.genannt@capi2name.de>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+use warnings;
+use strict;
+use FCGI::Client;
+use IO::Socket::INET;
+use IO::Socket::UNIX;
+use Getopt::Long;
+
+my $timeout = 4;
+my $phpscript = undef;
+my $verbose = undef;
+my $option_pool = undef;
+
+GetOptions(
+	"pool|p=s"   => \$option_pool,
+	"script|s=s" => \$phpscript,
+) or die("Please use -p poolname and/or -s script\n");
+
+if (!$option_pool) {
+	print STDERR "Please supply a pool name with -p ...\n";
+	print STDERR "Pool Name, the filename of the pool inside pool.d without .conf suffix!";
+	exit(1);
+}
+
+if (!$phpscript) {
+	$phpscript = '/usr/share/php-clear-cache/php-clear-cache.php';
+}
+
+if ( ! -f $phpscript) {
+	print STDERR "Could not find -s script for clearing. If not using -s option\n";
+	print STDERR "the Script should available within:\n";
+	print STDERR "  /usr/share/php-clear-cache/php-clear-cache.php\n";
+	exit(1);
+}
+
+if ($option_pool !~ /^[A-Za-z0-9_.-]+$/) {
+	print STDERR "Please supply valid PHP Pool Name as argument\n";
+	exit(2);
+}
+
+my $pool_filename = '/etc/php5/fpm/pool.d/' . $option_pool . '.conf';
+
+if (! -f $pool_filename) {
+	print STDERR "PHP Pool configuration in $pool_filename not found!\n";
+	exit(2);
+}
+
+my $listen = _get_listen_pool($pool_filename);
+if (!$listen) {
+	print STDERR "Could not find listen = in the config $pool_filename\n";
+	exit(1);
+}
+
+my $socket;
+if ($listen =~ /^\//) {
+	$socket = IO::Socket::UNIX->new(
+		Peer => $listen,
+	) or &broken();
+}
+else {
+	my ($ip, $port) = split(/:/, $listen, 2);
+	$socket = IO::Socket::INET->new(
+		PeerAddr => $ip,
+		PeerPort => $port,
+		Timeout  => $timeout,
+		Proto    => 'tcp',
+	) or &broken();
+}
+
+my $client = FCGI::Client::Connection->new( sock => $socket, timeout => $timeout ) or &_broken();
+
+my ( $stdout, $stderr ) = $client->request(
+    +{
+        REQUEST_METHOD  => 'GET',
+        PHP_SELF        => $phpscript,
+        SCRIPT_FILENAME => $phpscript,
+        QUERY_STRING    => '',
+    },
+    ''
+) or &broken();
+if ($stdout) {
+	$stdout =~s/Content-type:.*//g;
+	$stdout =~s/\r\n//s;
+	$stdout =~s/\n//s;
+}
+print "$stderr" if $stderr;
+
+sub broken()
+{
+   print "FastCGI CRITICAL: fastcgi has not responded.";
+   exit(2);
+}
+
+sub _get_listen_pool {
+	my $pool_filename = $_[0];
+	my $listen = '';
+	open(my $poolconfig, '<', $pool_filename);
+	foreach(<$poolconfig>) {
+		if ($_ =~ /^\s*listen\s*=(.*)/) {
+			$listen = $1;
+			last;
+		}
+	}
+	close($poolconfig);
+	$listen =~ s/^\s+|\s+$//g;
+	chomp($listen);
+	return $listen;
+}
