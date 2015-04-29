@@ -26,10 +26,12 @@ my $timeout = 4;
 my $phpscript = undef;
 my $verbose = undef;
 my $option_pool = undef;
+my $option_print = undef;
 
 GetOptions(
 	"pool|p=s"   => \$option_pool,
 	"script|s=s" => \$phpscript,
+	"print"      => \$option_print,
 ) or die("Please use -p poolname and/or -s script\n");
 
 if (!$option_pool) {
@@ -100,6 +102,7 @@ if ($stdout) {
 	$stdout =~s/\n//s;
 }
 print "$stderr" if $stderr;
+print "$stdout" if $option_print;
 
 sub broken()
 {
